@@ -1,54 +1,79 @@
-<!DOCTYPE html>
-<html>
- <head>
-	 <meta charset="UTF-8">
- <title>Kaart</title>
-
+<!DOCTYPE html> <html> <head> <meta charset="UTF-8"> <title>Kaart</title>
 <link rel="stylesheet"
-	href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+    #kaardikiht {
+        height: 600px;
+        width: 100%;
+    }
+</style>
 
-	 let kaart
-	 let hypik
-	 let marker1, marker2;
-	 function algus(){
-		 kaart = L.map('kaardikiht').setView([59.439, 24.773], 12);
-		 new L.TileLayer(
-  'https://tiles.maaamet.ee/tm/tms/1.0.0/hybriid@GMC/{z}/{x}/{y}.png&ASUTUS=TLU&ERIALA=DIGIHUMANITAARIA', {
-	  attribution: "Map: <a  href='http://www.maaamet.ee/'>Maa-amet</a>",
-	  tms: true,
-    }).addTo(kaart);
-		 marker1=L.marker([59.439, 24.773], {draggable: true});
-		 marker2=L.marker([59.439, 24.773], {draggable: true});
-		 marker1.addTo(kaart);
-		 marker2.addTo(kaart);
-		 marker1.on("dragend", liikumine);
-		 marker2.on("dragend", liikumine);
-		 hypik=L.popup();
-		 kaart.on("click", vajutus);
-	 }
-	 
-	 function liikumine(){
-		 selgitus.innerText=marker1.getLatLng().distanceTo(marker2.getLatLng());
-	 }
-	 
-	 function kuvaTee(andmed){
-		 tee=andmed.routes[0];
-		 console.log(tee["duration"], tee["distance"]);
-		 console.log(tee["geometry"]);
-		 L.geoJSON(tee.geometry).addTo(kaart);
-		
-   }
+</head> <body onload="algus()">
+<div id="kaardikiht"></div>
+<p>Vahemaa: <span id="selgitus">0</span> meetrit</p>
 
-function vajutus(e){
-	hypik.setLatLng.(e.latlng).setContent("Vajutasid "+e.latlng.toString()).openOn(kaart);
-}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  </script>
- </head>  
- <body onload="algus()">
-  <div id="kaardikiht"></div>
- </body>
-</html>
+<script>
+    let kaart;
+    let hypik;
+    let marker1, marker2;
+    let tee;
+
+    function algus() {
+        kaart = L.map('kaardikiht').setView([59.439, 24.773], 12);
+
+        new L.TileLayer(
+            'https://tiles.maaamet.ee/tm/tms/1.0.0/hybriid@GMC/{z}/{x}/{y}.png&ASUTUS=TLU&ERIALA=DIGIHUMANITAARIA',
+            {
+                attribution: 'Map: <a href="https://www.maaamet.ee/">Maa-amet</a>',
+                tms: true
+            }
+        ).addTo(kaart);
+
+        marker1 = L.marker([59.439, 24.773], {
+            draggable: true
+        }).addTo(kaart);
+
+        marker2 = L.marker([59.439, 24.773], {
+            draggable: true
+        }).addTo(kaart);
+
+        marker1.on("dragend", liikumine);
+        marker2.on("dragend", liikumine);
+
+        hypik = L.popup();
+
+        kaart.on("click", vajutus);
+
+        liikumine();
+    }
+
+    function liikumine() {
+        let kaugus = marker1.getLatLng()
+            .distanceTo(marker2.getLatLng());
+
+        document.getElementById("selgitus").innerText =
+            Math.round(kaugus);
+    }
+
+    function kuvaTee(andmed) {
+        tee = andmed.routes[0];
+
+        console.log(tee.duration, tee.distance);
+        console.log(tee.geometry);
+
+        L.geoJSON(tee.geometry).addTo(kaart);
+    }
+
+    function vajutus(e) {
+        hypik
+            .setLatLng(e.latlng)
+            .setContent("Vajutasid " + e.latlng.toString())
+            .openOn(kaart);
+    }
+</script>
+
+</body> </html>
 
