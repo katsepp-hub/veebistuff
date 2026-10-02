@@ -10,19 +10,29 @@
    #kaardikiht {float:bottom; width:100%; height:100%;}
  </style>
  <script>
-   var kaart;
-   function algus(){
-    kaart = L.map('kaardikiht').setView([59.439, 24.773], 13);
-      new L.TileLayer(
+	 let kaart
+	 let hypik
+	 let marker1, marker2;
+	 function algus(){
+		 kaart = L.map('kaardikiht').setView([59.439, 24.773], 12);
+		 new L.TileLayer(
   'https://tiles.maaamet.ee/tm/tms/1.0.0/hybriid@GMC/{z}/{x}/{y}.png&ASUTUS=TLU&ERIALA=DIGIHUMANITAARIA', {
 	  attribution: "Map: <a  href='http://www.maaamet.ee/'>Maa-amet</a>",
 	  tms: true,
     }).addTo(kaart);
-    L.marker([59.439, 24.773]).addTo(kaart);
-    L.circleMarker([59.433, 24.749]).addTo(kaart);  
-    L.circle([59.440, 24.737], {radius: 1000}).addTo(kaart).bindPopup("Raudteejaam");    
-    L.circle([59.427203, 24.773312], {radius: 1000, color: "yellow"}).addTo(kaart);    
-
+		 marker1=L.marker([59.439, 24.773], {draggable: true});
+		 marker2=L.marker([59.439, 24.773], {draggable: true});
+		 marker1.addTo(kaart);
+		 marker2.adTo(kaart);
+		 hypik=L.popup();
+		 kaart.on("click", vajutus);
+	 }
+	 function kuvaTee(andmed){
+		 tee=andmed.routes[0];
+		 console.log(tee["duration"], tee["distance"]);
+		 console.log(tee["geometry"]);
+		 L.geoJSON(tee.geometry).addTo(kaart);
+		
    }
 
   </script>
