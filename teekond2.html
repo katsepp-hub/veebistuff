@@ -22,13 +22,15 @@
 		 marker1=L.marker([59.439, 24.773], {draggable: true});
 		 marker2=L.marker([59.439, 24.773], {draggable: true});
 		 marker1.addTo(kaart);
-		 marker2.adTo(kaart);
+		 marker2.addTo(kaart);
+		 marker1.on("dragend", liikumine);
+		 marker2.on("dragend", liikumine);
 		 hypik=L.popup();
 		 kaart.on("click", vajutus);
 	 }
 	 
 	 function liikumine(){
-		 selgitus.innerText=Math.round(marker1.getLatLng().distanceTo(marker2.getLatLng()))/1000+" km";
+		 selgitus.innerText=marker1.getLatLng().distanceTo(marker2.getLatLng());
 	 }
 	 
 	 function kuvaTee(andmed){
