@@ -7,7 +7,7 @@
              SELECT ?item ?itemLabel
               WHERE
               {
-                ?item wdt:P27 wd:Q33. 
+                ?item wdt:P27 wd:${riik.value}. 
                 ?item wdt:P106 wd:Q177220.
               
                 SERVICE wikibase:label {
@@ -53,9 +53,10 @@
      </script>
   </head>
   <body>
-    <select id="riik>
+    <select id="riik on change=("kysi")>
       <option value="Q33">Soome</select>option>
       <option value="Q191">Eesti</select>option>
+    <option value="Q34">Rootsi</select>option>
   </select>
      <input type="button" value="otsi" onclick="kysi()" />
      <input type="button" value="otsi 2" onclick="kysi2()" />
