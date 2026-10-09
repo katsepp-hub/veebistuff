@@ -1,45 +1,123 @@
-<!DOCTYPE html>
-<html>
- <head>
- <title>Kaart</title>
- <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.js"></script>
- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.5.1/leaflet.css" />
- <style>
-   body {padding: 0; margin: 0; }
-   html, body { height: 100%; width: 100%;}
-   img { border: 0;}
-   #kaardikiht {float:bottom; width:100%; height:100%;}
- </style>
- <script>
-   var kaart;
-   var xhr=new XMLHttpRequest();
-   xhr.onreadystatechange=loeAndmed;
-   
-   function loeAndmed(){
-     if(xhr.readyState==4){ //kui andmed kohal
-      //console.log(xhr.responseText);
-	  var m=xhr.responseText.split("\n");
-	  for(var i=0; i<m.length; i++){
-	     var rida=m[i].split(",");
-		 L.circleMarker(
-		  [parseFloat(rida[1]), parseFloat(rida[2])]).
-		  addTo(kaart);
-	  }
-	 }
-   }
-   function algus(){
-    xhr.open("GET", "koordinaadid.txt", true);
-	xhr.send();
-    kaart = L.map('kaardikiht').setView([59.43, 24.75], 13);
-    new L.TileLayer('https://tiles.maaamet.ee/tm/tms/1.0.0/hybriid@GMC/{z}/{x}/{y}.png&ASUTUS=TLU&ERIALA=DIGIHUMANITAARIA', {
-	attribution: "Map: <a  href='http://www.maaamet.ee/'>Maa-amet</a>",
-	tms: true,
-   }).addTo(kaart);
-   }
+<!doctype html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <title>Wikidata otsing</title>
+
+  <script>
+    // Wikidata päringu käivitamine
+    function paring(lause) {
+      let aadress =
+        "https://query.wikidata.org/sparql?format=json&query=" +
+        encodeURIComponent(lause);
+
+      return fetch(aadress).then(vastus => {
+        if (!vastus.ok) {
+          throw new Error("Wikidata päringu viga");
+        }
+        return vastus.json();
+      });
+    }
+
+    // Laadime ametid Wikidatast
+    function laeAmetid() {
+      let lause = `
+        SELECT DISTINCT ?amet ?ametLabel
+        WHERE {
+          ?item wdt:P106 ?amet.
+          SERVICE wikibase:label {
+            bd:serviceParam wikibase:language "et,en".
+          }
+        }
+        ORDER BY ?ametLabel
+        LIMIT 200
+      `;
+
+      paring(lause)
+        .then(d => {
+          let amet = document.getElementById("amet");
+          amet.innerHTML = "";
+
+          for (let rida of d.results.bindings) {
+            let valik = document.createElement("option");
+            valik.value = rida.amet.value.split("/").pop();
+            valik.textContent = rida.ametLabel.value;
+            amet.appendChild(valik);
+          }
+        })
+        .catch(viga => console.error(viga));
+    }
+
+    // Otsime inimesi valitud riigi ja ameti järgi
+    function kysi() {
+      let riik = document.getElementById("riik").value;
+      let amet = document.getElementById("amet").value;
+
+      let lause = `
+        SELECT DISTINCT ?item ?itemLabel
+        WHERE {
+          ?item wdt:P27 wd:${riik}.
+          ?item wdt:P106 wd:${amet}.
+
+          SERVICE wikibase:label {
+            bd:serviceParam wikibase:language "et,en".
+          }
+        }
+        LIMIT 20
+      `;
+
+      paring(lause)
+        .then(kuva)
+        .catch(viga => {
+          console.error(viga);
+          document.getElementById("vastus").textContent =
+            "Andmete laadimine ebaõnnestus.";
+        });
+    }
+
+    // Kuvame tulemused
+    function kuva(d) {
+      let vastus = document.getElementById("vastus");
+      vastus.innerHTML = "";
+
+      for (let rida of d.results.bindings) {
+        let element = document.createElement("li");
+        element.textContent = rida.itemLabel.value;
+        vastus.appendChild(element);
+      }
+
+      if (vastus.children.length === 0) {
+        vastus.textContent = "Tulemusi ei leitud.";
+      }
+    }
+
+    // Laadime ametid lehe avamisel
+    window.onload = laeAmetid;
   </script>
- </head>  
- <body onload="algus()">
-  <div id="kaardikiht"></div>
- </body>
+</head>
+
+<body>
+  <h2>Inimeste otsing Wikidatast</h2>
+
+  <label for="riik">Vali riik:</label>
+  <select id="riik">
+    <option value="Q33">Soome</option>
+    <option value="Q191">Eesti</option>
+    <option value="Q34">Rootsi</option>
+  </select>
+
+  <br><br>
+
+  <label for="amet">Vali amet:</label>
+  <select id="amet">
+    <option value="">Ametite laadimine...</option>
+  </select>
+
+  <br><br>
+
+  <input type="button" value="Otsi" onclick="kysi()">
+
+  <ul id="vastus"></ul>
+</body>
 </html>
 
